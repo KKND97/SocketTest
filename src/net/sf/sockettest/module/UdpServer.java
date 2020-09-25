@@ -1,4 +1,4 @@
-package net.sf.sockettest;
+package net.sf.sockettest.module;
 
 import java.net.*;
 import java.io.*;

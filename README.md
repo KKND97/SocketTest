@@ -12,5 +12,9 @@ Features:
  * Create a UDP server socket that listens on a particular port.
  * Save the conversation with the client or host to a txt file.
  * TrustManager to prompt if certificate does not get validated.
+ ===============================================================
+ * UDP message alert
+ * TCP Server socket ssl
+ * TCP proxy
 
 Copyright © 2003-2008 Akshathkumar Shetty

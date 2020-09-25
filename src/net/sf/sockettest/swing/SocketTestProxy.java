@@ -2,7 +2,6 @@ package net.sf.sockettest.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -10,16 +9,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import javax.net.ssl.KeyManagerFactory;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -38,13 +32,8 @@ import javax.swing.border.EtchedBorder;
 
 import net.sf.sockettest.Util;
 import net.sf.sockettest.module.SocketServer;
-import net.sf.sockettest.ssl.SSLUtil;
 
-/**
- *
- * @author Akshathkumar Shetty
- */
-public class SocketTestServer extends JPanel /*JFrame*/ {
+public class SocketTestProxy extends JPanel {
     private final String NEW_LINE = "\r\n";
     private ClassLoader cl = getClass().getClassLoader();
     public ImageIcon logo = new ImageIcon(cl.getResource("icons/logo.gif"));
@@ -90,7 +79,25 @@ public class SocketTestServer extends JPanel /*JFrame*/ {
 
     protected final JFrame parent;
 
-    public SocketTestServer(final JFrame parent) {
+    //client
+    //private JPanel topClientPanel;
+    private JPanel toClientPanel;
+
+    private JLabel ipClientLabel = new JLabel("IP Address");
+    private JLabel portClientLabel = new JLabel("Port");
+    private JLabel logoClientLabel = new JLabel("SocketTest v 3.0", logo, JLabel.CENTER);
+    private JTextField ipClientField = new JTextField("127.0.0.1", 20);
+    private JTextField portClientField = new JTextField("21", 10);
+    private JButton portClientButton = new JButton("Port");
+    private JButton connectClientButton = new JButton("Connect");
+
+    private JCheckBox secureButton = new JCheckBox("Secure");
+    private boolean isSecure = false;
+
+    /**
+     * Create the panel.
+     */
+    public SocketTestProxy(final JFrame parent) {
         //Container cp = getContentPane();
         this.parent = parent;
         Container cp = this;
@@ -135,7 +142,7 @@ public class SocketTestServer extends JPanel /*JFrame*/ {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         ActionListener connectListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                connect();
+                //connect();
             }
         };
         portField.addActionListener(connectListener);
@@ -182,12 +189,106 @@ public class SocketTestServer extends JPanel /*JFrame*/ {
 
         toPanel.setBorder(BorderFactory.createTitledBorder(new EtchedBorder(), "Listen On"));
         topPanel.setLayout(new BorderLayout(10, 0));
-        topPanel.add(toPanel);
+        topPanel.add(toPanel, BorderLayout.CENTER);
         logoLabel.setVerticalTextPosition(JLabel.BOTTOM);
         logoLabel.setHorizontalTextPosition(JLabel.CENTER);
         topPanel.add(logoLabel, BorderLayout.EAST);
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
 
+        //client
+        //topClientPanel = new JPanel();
+        toClientPanel = new JPanel();
+        toClientPanel.setLayout(new GridBagLayout());
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.weighty = 0.0;
+        gbc.weightx = 0.0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridheight = 1;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.fill = GridBagConstraints.NONE;
+        toClientPanel.add(ipClientLabel, gbc);
+
+        gbc.weightx = 1.0; //streach
+        gbc.gridx = 1;
+        gbc.gridwidth = 4;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        ActionListener ipClientListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                portClientField.requestFocus();
+            }
+        };
+        ipClientField.addActionListener(ipListener);
+        toClientPanel.add(ipClientField, gbc);
+
+        gbc.weightx = 0.0;
+        gbc.gridy = 1;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        toClientPanel.add(portClientLabel, gbc);
+
+        gbc.weightx = 1.0;
+        gbc.gridy = 1;
+        gbc.gridx = 1;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        ActionListener connectClientListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //connect();
+            }
+        };
+        portClientField.addActionListener(connectClientListener);
+        toClientPanel.add(portClientField, gbc);
+
+        gbc.weightx = 0.0;
+        gbc.gridy = 1;
+        gbc.gridx = 2;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        portClientButton.setMnemonic('P');
+        portClientButton.setToolTipText("View Standard Ports");
+        ActionListener portClientButtonListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                PortDialog dia = new PortDialog(parent, PortDialog.TCP);
+                dia.show();
+            }
+        };
+        portClientButton.addActionListener(portClientButtonListener);
+        toClientPanel.add(portClientButton, gbc);
+
+        gbc.weightx = 0.0;
+        gbc.gridy = 1;
+        gbc.gridx = 3;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        connectClientButton.setMnemonic('C');
+        connectClientButton.setToolTipText("Start Connection");
+        connectClientButton.addActionListener(connectListener);
+        toClientPanel.add(connectClientButton, gbc);
+
+        gbc.weightx = 0.0;
+        gbc.gridy = 1;
+        gbc.gridx = 4;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        secureButton.setToolTipText("Set Has Secure");
+        secureButton.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                isSecure = !isSecure;
+            }
+        });
+        toClientPanel.add(secureButton, gbc);
+
+        toClientPanel.setBorder(BorderFactory.createTitledBorder(new EtchedBorder(), "Connect To"));
+        topPanel.add(toClientPanel, BorderLayout.SOUTH);
+        //logoClientLabel.setVerticalTextPosition(JLabel.BOTTOM);
+        //logoClientLabel.setHorizontalTextPosition(JLabel.CENTER);
+        //topPanel.add(logoClientLabel, BorderLayout.EAST);
+        //topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
+
+        //text
         textPanel = new JPanel();
         textPanel.setLayout(new BorderLayout(0, 5));
         textPanel.add(convLabel, BorderLayout.NORTH);
@@ -220,13 +321,14 @@ public class SocketTestServer extends JPanel /*JFrame*/ {
         ActionListener sendListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String msg = sendField.getText();
-                if (!msg.equals(""))
-                    sendMessage(msg);
-                else {
-                    int value = JOptionPane.showConfirmDialog(SocketTestServer.this, "Send Blank Line ?",
+                if (!msg.equals("")) {
+                    //sendMessage(msg);
+                } else {
+                    int value = JOptionPane.showConfirmDialog(SocketTestProxy.this, "Send Blank Line ?",
                             "Send Data To Client", JOptionPane.YES_NO_OPTION);
-                    if (value == JOptionPane.YES_OPTION)
-                        sendMessage(msg);
+                    if (value == JOptionPane.YES_OPTION) {
+                        //sendMessage(msg);
+                    }
                 }
             }
         };
@@ -235,7 +337,7 @@ public class SocketTestServer extends JPanel /*JFrame*/ {
         sendPanel.add(sendButton, gbc);
         ActionListener disconnectListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                disconnect();
+                //disconnect();
             }
         };
         gbc.gridx = 3;
@@ -268,20 +370,20 @@ public class SocketTestServer extends JPanel /*JFrame*/ {
             public void actionPerformed(ActionEvent e) {
                 String text = messagesField.getText();
                 if (text.equals("")) {
-                    error("Nothing to save", "Save to file");
+                    //error("Nothing to save", "Save to file");
                     return;
                 }
                 String fileName = "";
                 JFileChooser chooser = new JFileChooser();
                 chooser.setCurrentDirectory(new File("."));
-                int returnVal = chooser.showSaveDialog(SocketTestServer.this);
+                int returnVal = chooser.showSaveDialog(SocketTestProxy.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     fileName = chooser.getSelectedFile()
                                       .getAbsolutePath();
                     try {
                         Util.writeFile(fileName, text);
                     } catch (Exception ioe) {
-                        JOptionPane.showMessageDialog(SocketTestServer.this, "" + ioe.getMessage(),
+                        JOptionPane.showMessageDialog(SocketTestProxy.this, "" + ioe.getMessage(),
                                 "Error saving to file..", JOptionPane.ERROR_MESSAGE);
                     }
                 }
@@ -311,202 +413,8 @@ public class SocketTestServer extends JPanel /*JFrame*/ {
 
         cp.setLayout(new BorderLayout(10, 0));
         cp.add(topPanel, BorderLayout.NORTH);
+        //cp.add(topClientPanel, BorderLayout.CENTER);
         cp.add(centerPanel, BorderLayout.CENTER);
     }
 
-    /*
-    public static void main(String args[]) {
-            SocketTestServer stServer=new SocketTestServer();
-            stServer.setTitle("SocketTest Server");
-            stServer.setSize(500,400);
-            Util.centerWindow(stServer);
-            stServer.setDefaultCloseOperation(EXIT_ON_CLOSE);
-            stServer.setIconImage(stServer.logo.getImage());
-            stServer.setVisible(true);
-    }
-     */
-
-    /////////////////////
-    //action & helper methods
-    /////////////////////
-    private void connect() {
-        if (server != null) {
-            stop();
-            return;
-        }
-        String ip = ipField.getText();
-        String port = portField.getText();
-        if (ip == null || ip.equals("")) {
-            JOptionPane.showMessageDialog(SocketTestServer.this, "No IP Address. Please enter IP Address",
-                    "Error connecting", JOptionPane.ERROR_MESSAGE);
-            ipField.requestFocus();
-            ipField.selectAll();
-            return;
-        }
-        if (port == null || port.equals("")) {
-            JOptionPane.showMessageDialog(SocketTestServer.this, "No Port number. Please enter Port number",
-                    "Error connecting", JOptionPane.ERROR_MESSAGE);
-            portField.requestFocus();
-            portField.selectAll();
-            return;
-        }
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (!Util.checkHost(ip)) {
-            JOptionPane.showMessageDialog(SocketTestServer.this, "Bad IP Address", "Error connecting",
-                    JOptionPane.ERROR_MESSAGE);
-            ipField.requestFocus();
-            ipField.selectAll();
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            return;
-        }
-        int portNo = 0;
-        try {
-            portNo = Integer.parseInt(port);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(SocketTestServer.this, "Bad Port number. Please enter Port number",
-                    "Error connecting", JOptionPane.ERROR_MESSAGE);
-            portField.requestFocus();
-            portField.selectAll();
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            return;
-        }
-        try {
-            InetAddress bindAddr = null;
-            if (!ip.equals("0.0.0.0"))
-                bindAddr = InetAddress.getByName(ip);
-            else
-                bindAddr = null;
-
-            if (isSSL) {
-                InputStream resourceAsStream = this.cl.getResourceAsStream("sockettest.jks");
-                KeyManagerFactory kmf = SSLUtil.buildKeyManagerFactory(resourceAsStream, "sockettest");
-                resourceAsStream.close();
-                server = SSLUtil.createServerSocket(kmf, portNo, 1, bindAddr);
-            } else {
-                server = new ServerSocket(portNo, 1, bindAddr);
-            }
-
-            ipField.setEditable(false);
-            portField.setEditable(false);
-            sslButton.setEnabled(false);
-
-            connectButton.setText("Stop Listening");
-            connectButton.setMnemonic('S');
-            connectButton.setToolTipText("Stop Listening");
-            //sendButton.setEnabled(true);
-            //sendField.setEditable(true);
-        } catch (Exception e) {
-            error(e.getMessage(), "Starting Server at " + portNo);
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            return;
-        }
-        //changeBorder(" "+socket.getInetAddress().getHostName()+
-        //	" ["+socket.getInetAddress().getHostAddress()+"] ");
-        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        messagesField.setText("> Server Started on Port: " + portNo + NEW_LINE);
-        append("> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        socketServer = SocketServer.handle(this, server);
-        //sendField.requestFocus();
-    }
-
-    //disconnect a client
-    public synchronized void disconnect() {
-        try {
-            socketServer.setDesonnected(true);
-        } catch (Exception e) {
-        }
-    }
-
-    public synchronized void stop() {
-        try {
-            disconnect(); //close any client
-            socketServer.setStop(true);
-        } catch (Exception e) {
-        }
-        server = null;
-        ipField.setEditable(true);
-        portField.setEditable(true);
-        sslButton.setEnabled(true);
-        connectButton.setText("Start Listening");
-        connectButton.setMnemonic('S');
-        connectButton.setToolTipText("Start Listening");
-        append("> Server stopped");
-        append("> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    }
-
-    public synchronized void setClientSocket(Socket s) {
-
-        if (s == null) {
-            out = null;
-            socket = null;
-            changeBorder(null);
-            sendButton.setEnabled(false);
-            sendField.setEditable(false);
-            disconnectButton.setEnabled(false);
-        } else {
-            socket = s;
-            changeBorder(" " + socket.getInetAddress()
-                                     .getHostName()
-                    + " [" + socket.getInetAddress()
-                                   .getHostAddress()
-                    + "] ");
-            sendButton.setEnabled(true);
-            sendField.setEditable(true);
-            disconnectButton.setEnabled(true);
-        }
-    }
-
-    public void error(String error) {
-        if (error == null || error.equals(""))
-            return;
-        JOptionPane.showMessageDialog(SocketTestServer.this, error, "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    public void error(String error, String heading) {
-        if (error == null || error.equals(""))
-            return;
-        JOptionPane.showMessageDialog(SocketTestServer.this, error, heading, JOptionPane.ERROR_MESSAGE);
-    }
-
-    public void append(String msg) {
-        messagesField.append(msg + NEW_LINE);
-        messagesField.setCaretPosition(messagesField.getText()
-                                                    .length());
-    }
-
-    public void appendnoNewLine(String msg) {
-        messagesField.append(msg);
-        messagesField.setCaretPosition(messagesField.getText()
-                                                    .length());
-    }
-
-    public void sendMessage(String s) {
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        try {
-            if (out == null) {
-                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-            }
-            append("S: " + s);
-            out.print(s + NEW_LINE);
-            out.flush();
-            sendField.setText("");
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        } catch (Exception e) {
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            JOptionPane.showMessageDialog(SocketTestServer.this, e.getMessage(), "Error Sending Message",
-                    JOptionPane.ERROR_MESSAGE);
-            disconnect();
-        }
-    }
-
-    private void changeBorder(String ip) {
-        if (ip == null || ip.equals(""))
-            connectedBorder = BorderFactory.createTitledBorder(new EtchedBorder(), "Connected Client : < NONE >");
-        else
-            connectedBorder = BorderFactory.createTitledBorder(new EtchedBorder(), "Connected Client : < " + ip + " >");
-        CompoundBorder cb = new CompoundBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10), connectedBorder);
-        centerPanel.setBorder(cb);
-        invalidate();
-        repaint();
-    }
 }

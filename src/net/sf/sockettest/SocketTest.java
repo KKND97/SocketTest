@@ -1,13 +1,17 @@
 package net.sf.sockettest;
 
-import java.awt.*;
-import java.applet.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
+import java.awt.Component;
+import java.awt.Container;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
+
 import net.sf.sockettest.swing.About;
 import net.sf.sockettest.swing.SocketTestClient;
+import net.sf.sockettest.swing.SocketTestProxy;
 import net.sf.sockettest.swing.SocketTestServer;
 import net.sf.sockettest.swing.SocketTestUdp;
 import net.sf.sockettest.swing.SplashScreen;
@@ -33,10 +37,12 @@ public class SocketTest extends JFrame {
         SocketTestServer server = new SocketTestServer(this);
         SocketTestUdp udp = new SocketTestUdp(this);
         About about = new About();
+        SocketTestProxy proxy = new SocketTestProxy(this);
         
         tabbedPane.addTab("Client", ball, (Component)client, "Test any server");
         tabbedPane.addTab("Server", ball, server, "Test any client");
         tabbedPane.addTab("Udp", ball, udp, "Test any UDP Client or Server");
+        tabbedPane.addTab("Proxy", ball, proxy, "Forward TCP Client to Server");
         tabbedPane.addTab("About", ball, about, "About SocketTest");
         
         tabbedPane.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));

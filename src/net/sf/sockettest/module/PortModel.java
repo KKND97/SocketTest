@@ -1,7 +1,10 @@
-package net.sf.sockettest;
+package net.sf.sockettest.module;
 
 import java.util.StringTokenizer;
 import javax.swing.table.*;
+
+import net.sf.sockettest.Util;
+
 import javax.swing.event.*;
 import java.io.IOException;
 

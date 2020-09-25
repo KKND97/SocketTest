@@ -2,6 +2,7 @@ package net.sf.sockettest.swing;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
@@ -10,10 +11,12 @@ import java.net.*;
 import java.io.*;
 
 import net.sf.sockettest.*;
+import net.sf.sockettest.module.UdpServer;
 
 /**
  *
  * @author Akshathkumar Shetty
+ * @author Dreams Liu
  */
 public class SocketTestUdp extends JPanel /*JFrame*/ {
     private final String NEW_LINE = "\r\n";
@@ -62,6 +65,9 @@ public class SocketTestUdp extends JPanel /*JFrame*/ {
     private DatagramPacket pack;
     private byte buffer[];
     
+    private JCheckBox alertButton = new JCheckBox("Alert");
+    private boolean isAlert = false;
+    
     protected final JFrame parent;
     
     public SocketTestUdp(final JFrame parent) {
@@ -85,7 +91,7 @@ public class SocketTestUdp extends JPanel /*JFrame*/ {
         
         gbc.weightx = 1.0; //streach
         gbc.gridx = 1;
-        gbc.gridwidth = 3;
+        gbc.gridwidth = 4;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         ActionListener ipListener1 = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -130,6 +136,20 @@ public class SocketTestUdp extends JPanel /*JFrame*/ {
         };
         portButton1.addActionListener(portButtonListener);
         serverPanel.add(portButton1, gbc);
+        
+        gbc.weightx = 0.0;
+        gbc.gridy = 1;
+        gbc.gridx = 4;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        alertButton.setToolTipText("Set Has Alert");
+        alertButton.addItemListener(
+                new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                isAlert = !isAlert;
+            }
+        });
+        serverPanel.add(alertButton, gbc);
         
         gbc.weightx = 0.0;
         gbc.gridy = 1;
@@ -510,6 +530,9 @@ public class SocketTestUdp extends JPanel /*JFrame*/ {
     public void append(String msg) {
         messagesField.append(msg+NEW_LINE);
         messagesField.setCaretPosition(messagesField.getText().length());
+        if(isAlert && msg.indexOf("R[") == 0){
+            JOptionPane.showMessageDialog(this, msg);
+        }
     }
     
 }

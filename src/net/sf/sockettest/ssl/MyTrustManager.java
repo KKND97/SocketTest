@@ -1,4 +1,4 @@
-package net.sf.sockettest;
+package net.sf.sockettest.ssl;
 
 import javax.net.ssl.*;
 import java.security.cert.*;
